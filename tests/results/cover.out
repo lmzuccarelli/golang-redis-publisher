@@ -1,0 +1,24 @@
+mode: set
+github.com/lmzuccarelli/golang-redis-publisher/pkg/validator/validate.go:13.59,17.27 4 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/validator/validate.go:17.27,18.15 1 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/validator/validate.go:18.15,21.4 2 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/validator/validate.go:23.3,23.69 1 0
+github.com/lmzuccarelli/golang-redis-publisher/pkg/validator/validate.go:25.2,25.12 1 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/validator/validate.go:30.50,38.23 2 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/validator/validate.go:38.23,39.54 1 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/validator/validate.go:39.54,41.4 1 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/validator/validate.go:43.2,43.12 1 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/handlers/handlers.go:24.89,32.19 3 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/handlers/handlers.go:32.19,34.3 1 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/handlers/handlers.go:35.2,36.16 2 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/handlers/handlers.go:36.16,41.3 4 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/handlers/handlers.go:44.2,45.17 2 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/handlers/handlers.go:45.17,51.3 5 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/handlers/handlers.go:74.2,82.16 7 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/handlers/handlers.go:82.16,87.3 4 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/handlers/handlers.go:90.2,93.16 3 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/handlers/handlers.go:93.16,98.3 4 0
+github.com/lmzuccarelli/golang-redis-publisher/pkg/handlers/handlers.go:100.2,105.33 6 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/handlers/handlers.go:108.54,110.2 1 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/handlers/handlers.go:113.57,119.2 4 1
+github.com/lmzuccarelli/golang-redis-publisher/pkg/handlers/handlers.go:122.98,128.2 5 1

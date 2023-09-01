@@ -1,0 +1,319 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>handlers: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/lmzuccarelli/golang-redis-publisher/pkg/handlers/handlers.go (92.2%)</option>
+				
+				<option value="file1">github.com/lmzuccarelli/golang-redis-publisher/pkg/validator/validate.go (92.9%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package handlers
+
+import (
+        "bytes"
+        "context"
+        "encoding/json"
+        "fmt"
+        "io"
+        "net/http"
+        "os"
+        "strconv"
+        "text/template"
+
+        "github.com/lmzuccarelli/golang-redis-publisher/pkg/connectors"
+        "github.com/lmzuccarelli/golang-redis-publisher/pkg/schema"
+)
+
+const (
+        CONTENTTYPE     string = "Content-Type"
+        APPLICATIONJSON string = "application/json"
+)
+
+// SendPayloadHandler - api function handler that sends events to redis pub/sub bus
+func SendPayloadHandler(w http.ResponseWriter, r *http.Request, con connectors.Clients) <span class="cov8" title="1">{
+        var cp *schema.GenericSchema
+
+        addHeaders(w, r)
+
+        // read the jwt token data in the body
+        // we don't use authorization header as the token can get quite large due to form data
+        // ensure we don't have nil - it will cause a null pointer exception
+        if r.Body == nil </span><span class="cov8" title="1">{
+                r.Body = io.NopCloser(bytes.NewBufferString(""))
+        }</span>
+        <span class="cov8" title="1">body, err := io.ReadAll(r.Body)
+        if err != nil </span><span class="cov8" title="1">{
+                msg := "Body data (JWT) error : access forbidden %v"
+                b := responseErrorFormat(http.StatusForbidden, w, msg, err)
+                fmt.Fprintf(w, "%s", string(b))
+                return
+        }</span>
+
+        // unmarshal result from mw backend
+        <span class="cov8" title="1">errs := json.Unmarshal(body, &amp;cp)
+        if errs != nil </span><span class="cov8" title="1">{
+                msg := "SendPayloadHandler could not unmarshal input data to schema %v"
+                con.Error(msg, errs)
+                b := responseErrorFormat(http.StatusInternalServerError, w, msg, errs)
+                fmt.Fprintf(w, "%s", string(b))
+                return
+        }</span>
+
+        // check the jwt token
+        //creds, err := verifyJwtToken(bp.JwtToken)
+        //if err != nil {
+        //        msg := "SendPayloadHandler verifyToken  %v"
+        //        con.Error(msg, err)
+        //        b := responseErrorFormat(http.StatusForbidden, w, msg, err)
+        //        fmt.Fprintf(w, string(b))
+        //        return
+        //}
+
+        //token := os.Getenv("TOKEN")
+        //url := os.Getenv("URL")
+        // check for the correct parameters. Do not check text for password resets
+        //msg := "SendPayloadHandler is not valid %s"
+        //con.Error(msg, "")
+        //b := responseErrorFormat(http.StatusInternalServerError, w, msg, "")
+        //fmt.Fprintf(w, "%s", string(b))
+        //return
+
+        // do some funky transforms ;)
+        //generic := &amp;schema.GenericSchema{Request: cp}
+        <span class="cov8" title="1">payload := `{ "number":"{{ .Number }}", "email":"{{ .Email }}" }`
+
+        con.Trace("SendPayloadHandler new schema %v", cp.Request)
+        tmpl := template.New("publish")
+        //parse some content and generate a template
+        tmp, _ := tmpl.Parse(payload)
+        var tpl bytes.Buffer
+        err = tmp.Execute(&amp;tpl, cp.Request)
+        if err != nil </span><span class="cov8" title="1">{
+                con.Error("SendPayloadHandler parse template %v", errs)
+                b := responseErrorFormat(http.StatusInternalServerError, w, " %v", errs)
+                fmt.Fprintf(w, "%s", string(b))
+                return
+        }</span>
+
+        // now make the call to get all data
+        <span class="cov8" title="1">con.Trace("SendPayloadHandler payload %s", tpl.String())
+
+        err = con.Publish(context.Background(), os.Getenv("TOPIC"), tpl.String())
+        if err != nil </span><span class="cov0" title="0">{
+                con.Error("SendPayloadHandler publish request %v", errs)
+                b := responseErrorFormat(http.StatusInternalServerError, w, " %v", errs)
+                fmt.Fprintf(w, "%s", string(b))
+                return
+        }</span>
+
+        <span class="cov8" title="1">msg := "SendPayloadHandler published successfully"
+        con.Debug(msg+" %v", string(body))
+        response := &amp;schema.Response{Name: os.Getenv("NAME"), StatusCode: "200", Status: "OK", Message: msg}
+        w.WriteHeader(http.StatusOK)
+        b, _ := json.MarshalIndent(response, "", "        ")
+        fmt.Fprintf(w, "%s", string(b))</span>
+}
+
+func IsAlive(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        fmt.Fprintf(w, "{ \"version\" : \""+os.Getenv("VERSION")+"\" , \"name\": \""+os.Getenv("NAME")+"\" }")
+}</span>
+
+// headers (with cors) utility
+func addHeaders(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        w.Header().Set(CONTENTTYPE, APPLICATIONJSON)
+        // use this for cors
+        w.Header().Set("Access-Control-Allow-Origin", "*")
+        w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+        w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+}</span>
+
+// responsFormat - utility function
+func responseErrorFormat(code int, w http.ResponseWriter, msg string, val ...interface{}) []byte <span class="cov8" title="1">{
+        var b []byte
+        response := &amp;schema.Response{Name: os.Getenv("NAME"), StatusCode: strconv.Itoa(code), Status: "ERROR", Message: fmt.Sprintf(msg, val...)}
+        w.WriteHeader(code)
+        b, _ = json.MarshalIndent(response, "", "        ")
+        return b
+}</span>
+
+// verifyJwtToken - private function
+/*
+func verifyJwtToken(tokenStr string) (*schema.Credentials, error) {
+        var creds *schema.Credentials
+
+        if tokenStr == "" {
+                return creds, errors.New("jwt token is invalid/empty")
+        }
+        // local function
+        token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+                if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+                        return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+                }
+                return []byte(os.Getenv("JWT_SECRETKEY")), nil
+        })
+
+        if err != nil {
+                return nil, err
+        }
+
+        if claims, ok := token.Claims.(jwt.MapClaims); ok &amp;&amp; token.Valid {
+                if claims["user"] == nil || claims["customerNumber"] == nil {
+                        return creds, errors.New("JWT invalid user/customerNumber empty")
+                }
+                user := claims["user"].(string)
+                cn := claims["customerNumber"].(string)
+                creds = &amp;schema.Credentials{User: user, Password: "", CustomerNumber: cn}
+                return creds, nil
+        }
+        return creds, errors.New("jwt token is invalid")
+}
+
+// encodeBase64 - suffix the data with : and base64 encode the data. This is a requirement by the MW plugin
+//func encodeBase64(data string) string {
+//        data = data + ":"
+//        sEnc := base64.StdEncoding.EncodeToString([]byte(data))
+//        return sEnc
+//}
+*/
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package validator
+
+import (
+        "fmt"
+        "os"
+        "strconv"
+        "strings"
+
+        "github.com/microlib/simple"
+)
+
+// checkEnvars - private function, iterates through each item and checks the required field
+func checkEnvar(item string, logger *simple.Logger) error <span class="cov8" title="1">{
+        name := strings.Split(item, ",")[0]
+        required, _ := strconv.ParseBool(strings.Split(item, ",")[1])
+        logger.Trace(fmt.Sprintf("Input parameters -&gt; name %s : required %t", name, required))
+        if os.Getenv(name) == "" </span><span class="cov8" title="1">{
+                if required </span><span class="cov8" title="1">{
+                        logger.Error(fmt.Sprintf("%s envar is mandatory please set it", name))
+                        return fmt.Errorf(fmt.Sprintf("%s envar is mandatory please set it", name))
+                }</span>
+
+                <span class="cov0" title="0">logger.Error(fmt.Sprintf("%s envar is empty please set it", name))</span>
+        }
+        <span class="cov8" title="1">return nil</span>
+}
+
+// ValidateEnvars : public call that groups all envar validations
+// These envars are set via the openshift template
+func ValidateEnvars(logger *simple.Logger) error <span class="cov8" title="1">{
+        items := []string{
+                "LOG_LEVEL,false",
+                "SERVER_PORT,true",
+                "VERSION,true",
+                "NAME,true",
+                "TOPIC,true",
+        }
+        for x := range items </span><span class="cov8" title="1">{
+                if err := checkEnvar(items[x], logger); err != nil </span><span class="cov8" title="1">{
+                        return err
+                }</span>
+        }
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
